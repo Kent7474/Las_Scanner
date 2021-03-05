@@ -1,4 +1,4 @@
-import gui.Surface as surface
+import gui.File_Viewer as fileViewer
 
 if __name__ == '__main__':
-    surface.fileViewer()
+    fileViewer.Surface()

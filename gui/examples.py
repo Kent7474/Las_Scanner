@@ -1,94 +1,96 @@
-
 import PySimpleGUI as sg
-
-layout = [[sg.Text("Hello from PySimpleGUI")], [sg.Button("OK")]]
-
-# Create the window
-window = sg.Window("Demo", layout)
-
-# Create an event loop
-while True:
-    event, values = window.read()
-    # End program if user closes window or
-    # presses the OK button
-    if event == "OK" or event == sg.WIN_CLOSED:
-        break
-
-window.close()
-
-#---------------------------------------------------------------------------------------------------
-# ---------------------------------------------------------------------------------------------------
-# ---------------------------------------------------------------------------------------------------
-# ---------------------------------------------------------------------------------------------------
-# ---------------------------------------------------------------------------------------------------
-
-
-# img_viewer.py
 import os.path
 
-# First the window layout in 2 columns
 
-file_list_column = [
-    [
-        sg.Text("Image Folder"),
-        sg.In(size=(25, 1), enable_events=True, key="-FOLDER-"),
-        sg.FolderBrowse(),
-    ],
-    [
-        sg.Listbox(
-            values=[], enable_events=True, size=(40, 20), key="-FILE LIST-"
-        )
-    ],
-]
+# las1 = Las("asdfasdf.las")
+#
+# las1.scanning()
 
-# For now will only show the name of the file that was chosen
-image_viewer_column = [
-    [sg.Text("Choose an image from list on left:")],
-    [sg.Text(size=(40, 1), key="-TOUT-")],
-    [sg.Image(key="-IMAGE-")],
-]
 
-# ----- Full layout -----
-layout = [
-    [
-        sg.Column(file_list_column),
-        sg.VSeperator(),
-        sg.Column(image_viewer_column),
-    ]
-]
 
-window = sg.Window("Image Viewer", layout)
+def Surface():
+    moutList = []
 
-# Run the Event Loop
-while True:
-    event, values = window.read()
-    if event == "Exit" or event == sg.WIN_CLOSED:
-        break
-    # Folder name was filled in, make a list of files in the folder
-    if event == "-FOLDER-":
-        folder = values["-FOLDER-"]
-        try:
-            # Get list of files in folder
-            file_list = os.listdir(folder)
-        except:
-            file_list = []
+    file_list_column = [
+        [
+            sg.Text("File Folder"),
+            sg.In(size=(25, 1), enable_events=True, key="-FOLDER-"),
+            sg.FolderBrowse(),
+        ],
+        [
+            sg.Listbox(values=[], enable_events=True, size=(50, 30), key="-FILE LIST-"),
+        ],
+        [
+            sg.HSeparator()
+        ],
+        [
+            sg.Button("Exit", size=(5, 1)),
 
-        fnames = [
-            f
-            for f in file_list
-            if os.path.isfile(os.path.join(folder, f))
-            and f.lower().endswith((".png", ".gif"))
         ]
-        window["-FILE LIST-"].update(fnames)
-    elif event == "-FILE LIST-":  # A file was chosen from the listbox
-        try:
-            filename = os.path.join(
-                values["-FOLDER-"], values["-FILE LIST-"][0]
-            )
-            window["-TOUT-"].update(filename)
-            window["-IMAGE-"].update(filename=filename)
+    ]
 
-        except:
-            pass
+    las_viewer_column = [
+        [sg.Text("Choose a .las from list on left:")],
+        [sg.Text(size=(40, 1), key="-TOUT-")],
+        [sg.Multiline(size=(60, 30), key="-MOUT-")],
+        [sg.HSeparator()],
+        [
+            sg.Button("Clear"),
+            sg.Button("List"),
+            sg.In(size=(25, 1), enable_events=True, key="-CUENCA-"),
+        ],
+    ]
 
-window.close()
+    layout = [
+        [
+            sg.Column(file_list_column),
+            sg.VSeparator(),
+            sg.Column(las_viewer_column)
+        ]
+    ]
+
+    window = sg.Window("LAS Viewer", layout)
+
+    while True:
+        event, values = window.read()
+        print(event)
+
+        # EXIT
+        if event == "Exit" or event == sg.WIN_CLOSED:
+            break
+
+        # SELECT FOLDER
+        if event == "-FOLDER-":
+            folder = values["-FOLDER-"]
+            try:
+                file_list = os.listdir(folder)
+            except:
+                file_list = []
+
+            fnames = [
+                f
+                for f in file_list
+                if os.path.isfile(os.path.join(folder, f))
+                   and ".las" in f.lower()
+            ]
+            fnames.sort()
+            window["-FILE LIST-"].update(fnames)
+
+        # SELECT AN ITEM IN FILE LIST
+        if event == "-FILE LIST-":
+            try:
+                fileListed = values["-FILE LIST-"][0]
+                print(fileListed)
+                moutList.append(fileListed)
+                lista = ""
+                for f in moutList:
+                    lista += f + "\n"
+                window["-MOUT-"].update(lista)
+            except:
+                print("Please, select File Folder")
+
+        if event == "Clear":
+            lista = ""
+            window["-MOUT-"].update(lista)
+        # print(event)
+        # print(values)
