@@ -3,8 +3,7 @@ import os.path
 
 
 class LasViewer:
-    moutList = []
-    arch_array = []
+    list_file_selected = []
 
     def __init__(self):
 
@@ -15,7 +14,7 @@ class LasViewer:
                 sg.FolderBrowse(),
             ],
             [
-                sg.Listbox(values=[], enable_events=True, size=(50, 30), key="-FILE LIST-"),
+                sg.Listbox(values=[], enable_events=True, size=(60, 30), key="-FILE LIST-"),
             ],
             [
                 sg.HSeparator()
@@ -29,12 +28,11 @@ class LasViewer:
         self.las_viewer_column = [
             [sg.Text("Choose a .las from list on left:")],
             [sg.Text(size=(40, 1), key="-TOUT-")],
-            [sg.Multiline(size=(60, 30), key="-MOUT-")],
+            [sg.Listbox(values=[], enable_events=True, size=(60, 30), key="-LIST OUT-")],
             [sg.HSeparator()],
             [
                 sg.Button("Clear"),
                 sg.Button("List"),
-                sg.In(size=(25, 1), enable_events=True, key="-CUENCA-"),
             ],
         ]
 
@@ -61,9 +59,10 @@ class LasViewer:
             self.__folder(self.event, self.values, self.window)
             if self.event == "Clear":
                 self.__clear(self.window, self.event)
-                self.moutList = []
-            self.__select_item_from_list(self.event, self.values, self.window, self.moutList)
-            self.__list_button(self.event, self.moutList)
+                self.list_file_selected = []
+            self.__select_item_from_list(self.event, self.values, self.window, self.list_file_selected)
+            self.__delete_item_from_list(self.event, self.values, self.window, self.list_file_selected)
+            self.__list_button(self.event, self.list_file_selected)
 
         self.window.close()
 
@@ -91,23 +90,33 @@ class LasViewer:
     @staticmethod
     def __clear(window, event):
         """CLEAR FILE LIST FUNCTION"""
-        window["-MOUT-"].update("")
+        window["-LIST OUT-"].update("")
 
     @staticmethod
-    def __select_item_from_list(event, values, window, moutList):
+    def __select_item_from_list(event, values, window, list_file_selected):
         """SELECT A .LAS FILE AND ADD TO THE LIST THAT WILL USE TO READ"""
         if event == "-FILE LIST-":
             try:
                 fileListed = values["-FILE LIST-"][0]
-                if fileListed not in moutList:
-                    moutList.append(fileListed)
+                if fileListed not in list_file_selected:
+                    list_file_selected.append(fileListed)
                     print(fileListed)
-                listSelectLas = ""
-                for f in moutList:
-                    listSelectLas += f + "\n"
-                window["-MOUT-"].Update(listSelectLas)
+                list_file_selected.sort()
+                window["-LIST OUT-"].Update(list_file_selected)
             except:
                 print("Please select File Folder containing *.las")
+
+    def __delete_item_from_list(self, event, values, window, list_file_selected):
+        """SELECT A FILE TO DELETE"""
+        if event == "-LIST OUT-":
+            print(event)
+            try:
+                to_delete = values["-LIST OUT-"][0]
+                list_file_selected.remove(to_delete)
+                list_file_selected.sort()
+                window["-LIST OUT-"].update(list_file_selected)
+            except:
+                print("Delete Failed")
 
     @staticmethod
     def __list_button(event, moutList):
@@ -118,44 +127,72 @@ class LasViewer:
 
 
 class LasScanned:
-    """OPEN NEW WINDOW FUNCTION"""
+    """OPEN NEW WINDOW"""
 
-    def __init__(self, moutList):
+    def __init__(self, list_file_selected):
+
+        self.list_file_selected = list_file_selected
+        self.out_list = self.show_files(list_file_selected)
+
         self.file_scanned = [
             [
-                sg.Multiline(size=(60, 30), key="-RESULT-"),
-                sg.Text(size=(40, 1), key="-TOUT-")
-            ],
-            [
-                sg.HSeparator()
+                sg.Multiline(size=(60, 30), enable_events=True, key="-RESULT-"),
             ],
             [
                 sg.Button("Exit", size=(5, 1)),
-            ],
+                sg.Button("SCAN", size=(7, 1))
+            ]
         ]
 
-        self.window_scanned = sg.Window("Las Scanned", self.file_scanned)
+        self.work_column = [
+
+                [sg.Text(text=self.out_list, size=(40, 20), enable_events=True, key="-TOUT2-")],
+                [sg.In(size=(25, 1), enable_events=True, key="-SAVE IN-")],
+                [sg.Button("Save .las", size=(8, 1))]
+
+        ]
+
+        self.layout = [
+            [
+                sg.Column(self.file_scanned),
+                sg.VSeparator(),
+                sg.Column(self.work_column)
+            ]
+        ]
+
+        self.window_scanned = sg.Window("Las Scanned", self.layout)
 
         # ----------------------------------------------------------------
         # MAIN WHILE WINDOW
         # -----------------------------------------------------------------
+
         while True:
             self.event, self.value = self.window_scanned.read()
+            print("-------------------- window 2 --------------------")
             print(self.event)
+            print(self.value)
+
             if self.event == "Exit" or self.event == sg.WIN_CLOSED:
                 self.window_scanned.close()
                 break
-            self.prueba(moutList)
 
-    def prueba(self, moutList):
-        print(moutList)
-        try:
-            listSelectLas = ""
-            for f in moutList:
-                listSelectLas += f + "\n"
-            self.window_scanned["-TOUT-"].update(listSelectLas)
-        except:
-            print("Please select File Folder containing *.las")
+            self.__test_multiline(self.event, self.window_scanned, self.list_file_selected)
+
+
+    def __test_multiline(self, event, window, list_file_selected):
+        if event == "SCAN":
+            print("lista 1")
+            print(list_file_selected)
+
+            window["-RESULT-"].update(list_file_selected)
+            print("lista 2")
+            print(list_file_selected)
+
+    def show_files(self, list_file_selected):
+        out = ""
+        for f in list_file_selected:
+            out += f + "\n"
+        return out
 
 
 lasViewerSurface = LasViewer()
