@@ -146,9 +146,9 @@ class LasScanned:
 
         self.work_column = [
 
-                [sg.Text(text=self.out_list, size=(40, 20), enable_events=True, key="-TOUT2-")],
-                [sg.In(size=(25, 1), enable_events=True, key="-SAVE IN-")],
-                [sg.Button("Save .las", size=(8, 1))]
+            [sg.Listbox(values=list_file_selected, enable_events=True, size=(60, 30), key="-FILE LIST2-")],
+            [sg.In(size=(25, 1), enable_events=True, key="-SAVE IN-")],
+            [sg.Button("Save .las", size=(8, 1))]
 
         ]
 
@@ -177,7 +177,7 @@ class LasScanned:
                 break
 
             self.__test_multiline(self.event, self.window_scanned, self.list_file_selected)
-
+            self.__fill_save_las(self.event, self.value, self.window_scanned)
 
     def __test_multiline(self, event, window, list_file_selected):
         if event == "SCAN":
@@ -193,6 +193,11 @@ class LasScanned:
         for f in list_file_selected:
             out += f + "\n"
         return out
+
+    def __fill_save_las(self, event, values, window):
+        if event == "-FILE LIST2-":
+            arch_name = values["-FILE LIST2-"][0]
+            window["-SAVE IN-"].update(arch_name)
 
 
 lasViewerSurface = LasViewer()
