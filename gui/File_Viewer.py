@@ -1,5 +1,6 @@
 import PySimpleGUI as sg
 import os.path
+from classes.Las import Las
 
 
 class LasViewer:
@@ -124,7 +125,7 @@ class LasViewer:
         """NEW SCAN WINDOW class: LasScanned"""
         if event == "List":
             print(moutList)
-            LasScanned(moutList,folder_PSL)
+            LasScanned(moutList, folder_PSL)
 
 
 class LasScanned:
@@ -140,7 +141,10 @@ class LasScanned:
 
         self.file_scanned = [
             [
-                sg.Multiline(size=(60, 30), enable_events=True, key="-RESULT-"),
+                sg.Text("RESULTS:")
+            ],
+            [
+                sg.Multiline(size=(60, 30), disabled=True, enable_events=True, key="-RESULT-"),
             ],
             [
                 sg.Button("Exit", size=(5, 1)),
@@ -149,8 +153,8 @@ class LasScanned:
         ]
 
         self.work_column = [
-            [sg.Listbox(values=list_file_selected, enable_events=True, size=(60, 25), key="-FILE LIST2-")],
-            [sg.In(size=(25, 1), enable_events=True, key="-SAVE IN-")],
+            [sg.Listbox(values=list_file_selected, enable_events=True, size=(60, 15), key="-FILE LIST2-")],
+            [sg.In(size=(25, 1), disabled=True, enable_events=True, key="-SAVE IN-")],
             [sg.Button("Save .las", size=(8, 1)), sg.Button("View List Saved", size=(12, 1))]
         ]
 
@@ -178,18 +182,14 @@ class LasScanned:
                 self.window_scanned.close()
                 break
 
-            self.__scan_las_in_FILE_LIST2(self.event, self.window_scanned, self.list_file_selected)
+            self.__scan_las_in_FILE_LIST2(self.event, self.window_scanned)
             self.__fill_save_las(self.event, self.value, self.window_scanned)
             self.__view_list_saved(self.event, self.saved_las)
 
-    def __scan_las_in_FILE_LIST2(self, event, window, list_file_selected):
+    def __scan_las_in_FILE_LIST2(self, event, window):
         if event == "SCAN":
-            print("lista 1")
-            print(list_file_selected)
-
-            window["-RESULT-"].update(list_file_selected)
-            print("lista 2")
-            print(list_file_selected)
+            # ////////////////////////// LAS class /////////////////////////////
+            Las(self.list_file_selected, self.folder_PSL)
 
     def show_files(self, list_file_selected):
         out = ""
