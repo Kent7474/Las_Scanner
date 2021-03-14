@@ -132,6 +132,7 @@ class LasScanned:
     """OPEN NEW WINDOW"""
 
     saved_las = []
+    result_from_scan = ""
 
     def __init__(self, list_file_selected, folder_PSL):
 
@@ -148,7 +149,9 @@ class LasScanned:
             ],
             [
                 sg.Button("Exit", size=(5, 1)),
-                sg.Button("SCAN", size=(7, 1))
+                sg.Button("SCAN", size=(7, 1)),
+                sg.VSeparator(),
+                sg.Button("Clear", pad=(2, 2))
             ]
         ]
 
@@ -185,11 +188,22 @@ class LasScanned:
             self.__scan_las_in_FILE_LIST2(self.event, self.window_scanned)
             self.__fill_save_las(self.event, self.value, self.window_scanned)
             self.__view_list_saved(self.event, self.saved_las)
+            if self.event == "Clear":
+                self.__clear_results(self.window_scanned)
+                self.result_from_scan = ""
 
     def __scan_las_in_FILE_LIST2(self, event, window):
         if event == "SCAN":
+            self.__clear_results(window)
             # ////////////////////////// LAS class /////////////////////////////
-            Las(self.list_file_selected, self.folder_PSL)
+            las = Las(self.list_file_selected, self.folder_PSL)
+            self.result_from_scan = las.analyze_prueba()
+            print(self.result_from_scan)
+
+            window["-RESULT-"].update(self.result_from_scan)
+
+    def __clear_results(self, window):
+        window["-RESULT-"].update("")
 
     def show_files(self, list_file_selected):
         out = ""
